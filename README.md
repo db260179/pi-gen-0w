@@ -52,7 +52,7 @@ once the image is tweaked to include the actual wi-fi SSID and password.
 
 To build the image, I run the following:
 
-   $ echo "IMAGE_NAME=Raspbian_0w" > config
+   $ echo "IMG_NAME=Raspbian_0w" > config
    $ echo "WIFI_SSID=MySsid" >> config
    $ echo "WIFI_PSK=MyPsk" >> config
    $ docker rm -v pigen_work
