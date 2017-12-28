@@ -34,7 +34,7 @@ at the time this repo was forked.
        * The file contains commented-out stanza for convenience in case I want
          to set up wlan0 with a static IP address if desired.
     * Modified `prerun.sh` to reduce the amount of space allocated to the root
-      partition from 800 MB extra down to 100 MB extra.
+      partition from 800 MB extra down to 200 MB extra.
 
 
 ## Config
