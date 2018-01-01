@@ -63,11 +63,13 @@ once the image is tweaked to include the actual wi-fi SSID and password.
 
 To build the image, I run the following:
 
+   ```
    $ echo "IMG_NAME=Raspbian_0w" > config
    $ echo "WIFI_SSID=MySsid" >> config
    $ echo "WIFI_PSK=MyPsk" >> config
    $ docker rm -v pigen_work
    $ nohup time ./build-docker.sh
+   ```
 
 Monitor nohup.out. When complete, images will be stored in the `deploy`
 subfolder.
@@ -75,7 +77,9 @@ subfolder.
 
 ### Clean-up
 
+   ```
    $ docker rm -v pigen_work
+   ```
 
 
 ## Deploy Procedure
@@ -94,21 +98,28 @@ a fake `/dev/sdX`. Substitute as necessary for your own SD card's device.
 
 Run the following:
 
+   ```
    $ cd deploy
    $ unzip image_2018-xx-xx-Raspbian_0w-0w.zip
+   ```
 
 Insert SD card, ensure it is available, and get its device name. (Run in a
 separate window to monitor.)
 
+   ```
    $ sudo tail -F /var/log/syslog
+   ```
 
 Write the image to the SD card:
 
+   ```
    $ sudo dd if=2018-xx-xx-Raspbian_0w-0w.img of=/dev/sdX bs=4M conv=fsync; sync
+   ```
 
 Eject the SD card and place in Raspberry Pi Zero W device.
 
 Apply power to the device.
+
 
 ### First Boot
 
@@ -124,7 +135,9 @@ router's web interface.
 
 For example:
 
+   ```
    $ sudo nmap -sP 192.168.1.0/24
+   ```
 
 It might help to run this command once before applying power, and then again a
 few minutes after applying power after giving time for the device to boot up
@@ -134,30 +147,42 @@ With the SSH server running and the IP address known, we should be able to
 log-into the device from another computer on the network. The following example
 assumes IP address 192.168.1.99 for the device:
 
+   ```
    $ ssh pi@192.168.1.99
+   ```
 
 Once logged-in, we might want to get some information about the device.
 
+   ```
    $ cat /proc/cpuinfo
    $ cat /sys/class/net/wlan0/address
+   ```
 
 The serial number would be good to note down, but the MAC address would be
 useful if configuring static DHCP settings on the wireless router.
 
 Before anything else, we likely want to change the default password:
 
+   ```
    pi$ passwd
+   ```
 
 We might also want to update packages:
 
+   ```
    pi$ sudo apt-get -y update
    pi$ sudo apt-get -y upgrade
+   ```
 
 We might want to run raspi-config to change other common settings:
 
+   ```
    pi$ sudo raspi-config
+   ```
 
 Finally, we might want to clean up apt:
 
+   ```
    pi$ sudo apt-get clean
+   ```
 
