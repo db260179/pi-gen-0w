@@ -25,8 +25,8 @@ at the time this repo was forked.
       provided in the config.
  * Stages 3, 4, and 5 disabled.
  * Created new Stage 3 installing the following packages:
-    * git
     * openssh-server
+    * python
  * `export-image`:
     * Added a second `8.8.4.4` name server to `resolv.conf`.
     * Added a file to `/etc/network/interfaces.d` for configuring `wlan0`.
@@ -54,7 +54,7 @@ environment variables:
 ## Output
 
 I'm only interested in running the Docker build. Running the build produces
-the usual Stage 2 "lite" build, and now also produces a new Stage 3 "0w"
+the usual Stage 2 "lite" build, and now also produces a new Stage 3 "sshd"
 build that I can use as an SD card image on a headless Raspberry Pi Zero W
 once the image is tweaked to include the actual wi-fi SSID and password.
 
@@ -100,7 +100,7 @@ Run the following:
 
    ```
    $ cd deploy
-   $ unzip image_2018-xx-xx-Raspbian_0w-0w.zip
+   $ unzip image_2018-xx-xx-Raspbian_0w-stage3.zip
    ```
 
 Insert SD card, ensure it is available, and get its device name. (Run in a
@@ -113,7 +113,7 @@ separate window to monitor.)
 Write the image to the SD card:
 
    ```
-   $ sudo dd if=2018-xx-xx-Raspbian_0w-0w.img of=/dev/sdX bs=4M conv=fsync; sync
+   $ sudo dd if=2018-xx-xx-Raspbian_0w-stage3.img of=/dev/sdX bs=4M conv=fsync; sync
    ```
 
 Eject the SD card and place in Raspberry Pi Zero W device.
