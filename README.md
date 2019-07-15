@@ -64,9 +64,12 @@ once the image is tweaked to include the actual wi-fi SSID and password.
 To build the image, I run the following:
 
    ```
-   $ echo "IMG_NAME=Raspbian_0w" > config
-   $ echo "WIFI_SSID=MySsid" >> config
-   $ echo "WIFI_PSK=MyPsk" >> config
+   $ cat << END_OF_FILE > config
+   IMG_NAME=Raspbian_0w
+   IMG_NAME=Raspbian_0w
+   WIFI_SSID=MySsid
+   WIFI_PSK=MyPsk
+   END_OF_FILE
    $ docker rm -v pigen_work
    $ nohup time ./build-docker.sh
    ```
