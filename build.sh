@@ -168,6 +168,9 @@ export WPA_PASSWORD
 export WPA_COUNTRY
 export ENABLE_SSH="${ENABLE_SSH:-0}"
 
+export WIFI_SSID
+export WIFI_PSK
+
 export BASE_DIR
 
 export CLEAN
