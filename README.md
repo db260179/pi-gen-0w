@@ -9,7 +9,7 @@ raspberrypi.org Raspbian Lite image._
 To build a custom Raspbian Lite image that can be burned onto a minimal microSD
 card to allow a potentially headless Raspberry Pi Zero W to immediately come
 up, connect to a known WPA2 AES wireless network, and provide an SSH server
-for remote access on the LAN.
+for remote access on the LAN with a read-only root and a tmpfs overlay.
 
 
 ## Differences
@@ -23,10 +23,13 @@ at the time this repo was forked.
     * Modified `wpa_supplicant.conf` to capture the configuration for a WPA2
       AES network, using variables `WIFI_SSID` and `WIFI_PSK` that can be
       provided in the config.
- * Stages 3, 4, and 5 disabled.
+    * Removed fake-hwclock and some other packages not needed for a headless
+      box with read-only root.
+ * Stages 4, and 5 disabled.
  * Created new Stage 3 installing the following packages:
     * openssh-server
     * python
+ * Created Stage 6 making changes appropriate for a read-only root filesystem.
  * `export-image`:
     * Added a second `8.8.4.4` name server to `resolv.conf`.
     * Added a file to `/etc/network/interfaces.d` for configuring `wlan0`.
