@@ -7,7 +7,14 @@
 # keeping is poor on a standard RPi so you may consider updating time regularly
 # (every hour or two should be enough).
 
-apt-get install -y ntp
+# Moved to 00-install-extras/00-packages
+#apt-get install -y ntp
 
-mv /etc/ntp.conf /etc/ntp.conf.orig
-sed -e 's/^\(driftfile\ \).*\(\/ntp\.drift\)$/\1\/var\/tmp\2/' /etc/ntp.conf.orig > /etc/ntp.conf
+filename=/etc/ntp.conf
+fileext=.orig.stage7
+
+if [ \! -f ${filename}.${fileext} ]; then
+   mv ${filename} ${filename}.${fileext}
+fi
+
+sed -e 's/^\(driftfile\ \).*\(\/ntp\.drift\)$/\1\/var\/tmp\/\2/' ${filename}.${fileext} > ${filename}
