@@ -1,0 +1,212 @@
+#!/bin/sh
+
+BASENAME=/usr/bin/basename
+DIRNAME=/usr/bin/dirname
+
+CAT=/bin/cat
+ECHO=/bin/echo
+LN=/bin/ln
+RM=/bin/rm
+SH=/bin/sh
+
+PROG=$(${BASENAME} ${0} .sh)
+PROG_PATH=$(${DIRNAME} ${0})
+
+
+EXIT_SUCCESS=0
+EXIT_RUNINIT_FAILED=1
+EXIT_MAIN_FAILED=2
+EXIT_RUNFIN_FAILED=3
+EXIT_NOT_LOCKED=4
+EXIT_USER_ABORTED=5
+EXIT_FAILURE=6
+EXIT_LOCKFILE_REMOVAL_FAILED=7
+
+
+LOCK_FILE="${0}.lock"
+CONFIG_FILE="${0}.conf"
+D_DIR="${PROG_PATH}/${PROG}.d"
+
+logLevel=${logLevel:-3}
+
+log() {
+   ll=${1}
+   shift
+
+   if [ ${logLevel} -gt ${ll} ]; then
+      #${ECHO} "${*}" 1>&2
+      logger "${*}"
+   fi
+}
+
+logT() {
+   log 4 '[TRACE]' "${*}"
+}
+
+logD() {
+   log 3 '[DEBUG]' "${*}"
+}
+
+logI() {
+   log 2 '[ INFO]' "${*}"
+}
+
+logW() {
+   log 1 '[ WARN]' "${*}"
+}
+
+logE() {
+   log 0 '[ERROR]' "${*}"
+}
+
+
+showWarningMessage() {
+
+   ${CAT} << END_OF_FILE
+
+
+WARNING: This will run a one-time initialization script that will perform
+the following tasks that are only meant to be run once EVER:
+END_OF_FILE
+
+   for f in ${D_DIR}/*; do
+      logT "Processing candidate script ${f}"
+
+      echo "${f}" | grep -q '^.*\.sh$'
+
+      if [ ${?} -eq 0 ]; then
+
+         extendedWarning() {
+            logT "${f}: extendedWarning not defined"
+            /bin/false
+         }
+
+         logD "Loading and running extendedWarning from ${f} if defined"
+         . ${f}
+
+         extendedWarning
+      fi
+   done
+
+   ${CAT} << END_OF_FILE
+
+
+END_OF_FILE
+
+}
+
+
+runInit() {
+   runInit_exitCode=${EXIT_SUCCESS}
+
+   if [ -L "${LOCK_FILE}" ]; then
+      logT 'Beginning runInit...'
+
+      showWarningMessage
+      #read -p 'Do you wish to proceed (Yes/no)? ' runInit_confirm
+      logI 'Confirmation prompt disabled to run non-interactively.'
+      runInit_confirm=Yes
+
+      if [ "${runInit_confirm}" = 'Yes' ]; then
+         logI 'User confirmed. Continuing.'
+      else
+         logI 'User aborted by not typing exactly "Yes". Exiting.'
+         runInit_exitCode=${EXIT_USER_ABORTED}
+      fi
+
+      logT 'Finishing runInit...'
+   else
+      logE "${LOCK_FILE} not found. Aborting."
+      runInit_exitCode=${EXIT_NOT_LOCKED}
+   fi
+
+   return ${runInit_exitCode}
+}
+
+
+runFin() {
+   runFin_exitCode=${EXIT_SUCCESS}
+   logT 'Beginning runFin...'
+
+   logT "Removing ${LOCK_FILE} to prevent script from running again"
+   ${RM} ${LOCK_FILE}
+
+   if [ ${?} -gt 0 ]; then
+      logE "Error removing ${LOCK_FILE}"
+      runFin_exitCode=${EXIT_LOCKFILE_REMOVAL_FAILED}
+   fi
+
+   logT 'Finishing runFin...'
+   return ${runFin_exitCode}
+}
+
+
+#---
+# Main
+#---
+
+   exitCode=${EXIT_SUCCESS}
+
+   logT "Running init"
+   runInit
+
+   if [ ${?} -eq 0 ]; then
+      logT 'Ready to begin.'
+
+      if [ -e "${CONFIG_FILE}" ]; then
+         logT "${CONFIG_FILE} found and sourced for configuration."
+         . ${CONFIG_FILE}
+      fi
+
+      for f in ${D_DIR}/*; do
+         echo "${f}" | grep -q '^.*\.sh$'
+
+         if [ ${?} -eq 0 ]; then
+            logT "Processing candidate script ${f}"
+
+            bf=$(${BASENAME} ${f})
+            f_ran_lock_file=${f}.completed
+
+            main() {
+               logE "${bf}: main not defined"
+	       # TODO should this return ${EXIT_MAIN_FAILED}?
+            }
+
+            if [ \! -L ${f_ran_lock_file} ]; then
+               logD "${bf}: Loading and running main"
+               . ${f}
+
+               main
+
+               if [ ${?} -eq 0 ]; then
+                  logT "${bf}: main passed"
+
+                  ${LN} -s /dev/null ${f_ran_lock_file}
+               else
+                  logE "${bf}: main failed. Cleaning up and exiting."
+                  exitCode=${EXIT_MAIN_FAILED}
+               fi
+            else
+               logT "${bf}: Skipping - previously completed successfully"
+            fi
+         else
+            logT "Ignoring file ${f}"
+         fi
+      done
+
+      logT "Running fin"
+
+      runFin
+
+      if [ ${?} -gt 0 ]; then
+         logE 'runFin failed.'
+         exitCode=${EXIT_RUNFIN_FAILED}
+      fi
+
+      logT 'Completed.'
+   else
+      logE 'runInit failed. Aborting.'
+      exitCode=${EXIT_RUNINIT_FAILED}
+   fi
+
+exit ${exitCode}

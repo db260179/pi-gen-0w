@@ -25,11 +25,16 @@ at the time this repo was forked.
       provided in the config.
     * Removed fake-hwclock and some other packages not needed for a headless
       box with read-only root.
- * Stages 4, and 5 disabled.
+ * Stages 3, 4, and 5 disabled.
  * Created new Stage 3 installing the following packages:
     * openssh-server
     * python
- * Created Stage 6 making changes appropriate for a read-only root filesystem.
+ * Added Stage 6:
+    * Added docker and docker-compose. (TODO)
+    * Added initial-setup script infrastructure for future stages to hook-into
+      a first-run/run-once setup finalization that will run the first time the
+      Raspbian is booted with the SD card.
+ * Added Stage 98 making changes appropriate for a read-only root filesystem.
  * `export-image`:
     * Added a second `8.8.4.4` name server to `resolv.conf`.
     * Added a file to `/etc/network/interfaces.d` for configuring `wlan0`.
@@ -38,6 +43,7 @@ at the time this repo was forked.
          to set up wlan0 with a static IP address if desired.
     * Modified `prerun.sh` to reduce the amount of space allocated to the root
       partition from 800 MB extra down to 200 MB extra.
+ * Added Stage 99 for tmpfs overlay over root filesystem.
 
 
 ## Config
@@ -73,8 +79,7 @@ To build the image, I run the following:
    WIFI_SSID=MySsid
    WIFI_PSK=MyPsk
    END_OF_FILE
-   $ docker rm -v pigen_work
-   $ nohup time ./build-docker.sh
+   $ nohup make clean all
    ```
 
 Monitor nohup.out. When complete, images will be stored in the `deploy`
@@ -193,6 +198,31 @@ Finally, we might want to clean up apt:
    ```
 
 # Troubleshooting
+
+I had difficulty putting this together or adding to the customization. I picked
+up the following along the way.
+
+ * Enter the container with `make enter-container` to troubleshoot what's going
+   on and for any one-time hacks.
+ * Take advantage of the SKIP files mentioned in the parent repo's README to
+   skip earlier stages when rebuilding and troubleshooting the current stage;
+   `make rebuild-last-stage` helps with this.
+ * The rootfs will not be rebuilt (i.e. carried over from an earlier stage) if
+   it already exists in the container. If unsure about its contents or to play
+   it safe, enter the container and blow it away under
+   `/pi-gen/work/.../stageX` before running `make rebuild-last-stage`.
+ * Prior to running `make clean all`, it helps to clear the clutter from past
+   runs. If rebuilding everything from scratch:
+    * Remove all SKIP files from earlier stages (`rm stage{0,1,2,...}/SKIP`).
+    * Remove docker containers (`docker ps -a` followed by `docker rm`).
+    * Remove applicable docker images (`docker images` followed by
+      `docker rmi`). The only one to really keep would be the `debian:buster`
+      image to avoid downloading it over and over.
+    * Remove/prune unreferenced docker volumes (`docker volume ls` and
+      `docker volume prune -f`).
+    * Repeat these commands as needed to ensure all applicable containers,
+      images, and volumes are cleared out and then run `make clean all` to
+      rebuild from scratch.
 
 ## `64 Bit Systems`
 Please note there is currently an issue when compiling with a 64 Bit OS. See https://github.com/RPi-Distro/pi-gen/issues/271
