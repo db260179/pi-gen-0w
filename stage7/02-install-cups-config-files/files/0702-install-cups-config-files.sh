@@ -1,5 +1,7 @@
 #!/bin/sh
 
+src=/root/scripts/initial-setup.files
+
 extendedWarning() {
    ${CAT} << END_OF_FILE
    o install CUPS configuration files
@@ -33,7 +35,7 @@ installCupsConfigFiles() {
    # UID 7 is the lp user
 
    logT 'Installing cupsd.conf'
-   install -v -o 0 -g 7 -m 644 -p "files/cupsd.conf" "/etc/cups/"
+   install -v -o 0 -g 7 -m 644 -p "${src}/cupsd.conf" "/etc/cups/"
 
    if [ ${?} -gt 0 ]; then
       logE "Error occurred installing cupsd.conf"
@@ -41,7 +43,7 @@ installCupsConfigFiles() {
    fi
 
    logT 'Installing printers.conf'
-   install -v -o 0 -g 7 -m 600 -p "files/printers.conf" "/etc/cups/"
+   install -v -o 0 -g 7 -m 600 -p "${src}/printers.conf" "/etc/cups/"
 
    if [ ${?} -gt 0 ]; then
       logE "Error occurred installing printers.conf"
@@ -65,7 +67,7 @@ installCupsConfigFiles() {
    fi
 
    logT 'Installing Ricoh C250DN PPD'
-   install -v -o 0 -g 7 -m 644 -p "files/ppd/Ricoh_C250DN.ppd" "/etc/cups/ppd/"
+   install -v -o 0 -g 7 -m 644 -p "${src}/Ricoh_C250DN.ppd" "/etc/cups/ppd/"
 
    if [ ${?} -gt 0 ]; then
       logE "Error occurred installing C250DN PPD"
@@ -73,7 +75,7 @@ installCupsConfigFiles() {
    fi
 
    #logT 'Installing Samsung ML-1710 PPD'
-   #install -v -o 0 -g 7 -m 644 -p "files/ppd/Samsung_ML-1710.ppd" "/etc/cups/ppd/"
+   #install -v -o 0 -g 7 -m 644 -p "${src}/Samsung_ML-1710.ppd" "/etc/cups/ppd/"
    #
    #if [ ${?} -gt 0 ]; then
    #   logE "Error occurred installing ML-1710 PPD"
@@ -87,7 +89,7 @@ installCupsConfigFiles() {
 main() {
    main_exitCode=${EXIT_SUCCESS}
 
-   if [ \( ${INITIAL_SETUP_CONF_REMOTE}  -gt 0 \) -a
+   if [ \( ${INITIAL_SETUP_CONF_REMOTE}  -gt 0 \) -a \
         \( ${INITIAL_SETUP_CONF_TRUSTED} -gt 0 \) ]; then
 
       installCupsConfigFiles

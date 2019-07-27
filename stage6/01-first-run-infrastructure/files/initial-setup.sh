@@ -14,10 +14,10 @@ PROG_PATH=$(${DIRNAME} ${0})
 
 
 EXIT_SUCCESS=0
+EXIT_NOT_LOCKED=0
 EXIT_RUNINIT_FAILED=1
 EXIT_MAIN_FAILED=2
 EXIT_RUNFIN_FAILED=3
-EXIT_NOT_LOCKED=4
 EXIT_USER_ABORTED=5
 EXIT_FAILURE=6
 EXIT_LOCKFILE_REMOVAL_FAILED=7
@@ -116,7 +116,7 @@ runInit() {
 
       logT 'Finishing runInit...'
    else
-      logE "${LOCK_FILE} not found. Aborting."
+      logT "${LOCK_FILE} not found. No changes made."
       runInit_exitCode=${EXIT_NOT_LOCKED}
    fi
 
